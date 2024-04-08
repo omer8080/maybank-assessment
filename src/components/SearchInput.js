@@ -23,14 +23,13 @@ const SearchInput = () => {
       (prediction) => prediction.place_id === option.key
     );
     setSelectedPrediction(selected);
-    const proxyUrl = "https://api.allorigins.win/get?url=";
-    const apiUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${selected.place_id}&key=GOOGLE_MAP_API_KEY`;
+    const proxyUrl = "/api/api/api/place/details/json?";
+    const apiUrl = `place_id=${selected.place_id}&key=GOOGLE_MAP_API_KEY`;
     const placeDetailsResponse = await fetch(
-      proxyUrl + encodeURIComponent(apiUrl)
+      proxyUrl + apiUrl
     );
     const placeDetailsData = await placeDetailsResponse.json();
-    const jsonData = JSON.parse(placeDetailsData.contents);
-    const { lat, lng } = jsonData?.result?.geometry?.location;
+    const { lat, lng } = placeDetailsData?.result?.geometry?.location;
     setSelectedPrediction({ ...selected, lat, lng });
   };
 
