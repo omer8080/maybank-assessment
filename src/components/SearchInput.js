@@ -1,6 +1,4 @@
-// SearchInput.js
-
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AutoComplete } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPlaceData } from "../actions/placeActions";
@@ -10,15 +8,32 @@ import { Col, Row } from "antd";
 const SearchInput = () => {
   const [query, setQuery] = useState("");
   const [selectedPrediction, setSelectedPrediction] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState(null);
   const dispatch = useDispatch();
   const predictions = useSelector((state) => state?.placeData);
+
+  useEffect(() => {
+    if (navigator?.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation({ lat: latitude, lng: longitude });
+        },
+        (error) => {
+          console.error('Error getting current position:', error);
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
+  }, []);
 
   const handleSearch = (value) => {
     setQuery(value);
     dispatch(fetchPlaceData(value));
   };
 
-  const handleSelect = async (value, option) => {
+  const handleSelect = useCallback(async (value, option) => {
     const selected = predictions.find(
       (prediction) => prediction.place_id === option.key
     );
@@ -31,7 +46,7 @@ const SearchInput = () => {
     const placeDetailsData = await placeDetailsResponse.json();
     const { lat, lng } = placeDetailsData?.result?.geometry?.location;
     setSelectedPrediction({ ...selected, lat, lng });
-  };
+  }, [predictions]);
 
   return (
     <div>
@@ -55,7 +70,7 @@ const SearchInput = () => {
       <Row style={{"marginTop":"50px"}}>
         <Col span={2}></Col>
         <Col span={20}>
-          <MapDisplay prediction={selectedPrediction} />
+          <MapDisplay prediction={selectedPrediction} defaultPosition={currentLocation} />
         </Col>
         <Col span={2}></Col>
       </Row>
